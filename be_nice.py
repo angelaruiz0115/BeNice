@@ -15,6 +15,12 @@ import random
 from pathlib import Path
 import thinc.extra.datasets
 
+import multiprocessing as mp
+import random
+import string
+
+random.seed(123)
+
 import spacy
 from spacy.util import minibatch, compounding
 
@@ -52,14 +58,31 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
     nlp.add_pipe(textcat, last=True)
     textcat.add_label('POSITIVE')
     optimizer = nlp.begin_training()
-    for itn in range(100):
-        for doc, gold in train_data:
-            nlp.update([doc], [gold], sgd=optimizer)
-    
+    for itn in range(0, 100, 5):
+        #print (itn)
+        
+        processes = [mp.Process(target=nlp_update,\
+                                args=(nlp, train_data, optimizer)) for x in range(4)]
+        #for doc, gold in train_data:
+            #nlp.update([doc], [gold], sgd=optimizer)
+        
+        # Run processes    
+        for p in processes:
+            p.start()
+            
+        # Exit the completed processes
+        for p in processes:
+            p.join()   
+            
     doc = nlp(u'That''s the dumbest thing I ever heard')
     print(doc.cats)    
 
-
+def nlp_update(nlp, train_data, optimizer):
+    
+    #run x times for number specified
+    
+    for doc, gold in train_data:
+        nlp.update([doc], [gold], sgd=optimizer)    
 
 
 if __name__ == '__main__':
