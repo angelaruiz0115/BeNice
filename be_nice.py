@@ -27,6 +27,14 @@ random.seed(123)
 import spacy
 from spacy.util import minibatch, compounding
 
+import nlu_functions
+from nlu_functions import load_data, evaluate
+
+import train
+from train import train_data
+
+
+
 
 @plac.annotations(
     model=("Model name. Defaults to blank 'en' model.", "option", "m", str),
@@ -46,41 +54,44 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
         nlp = spacy.blank('en')  # create blank Language class
         print("Created blank 'en' model")
 
-    train_data = [
-        (u"I love you", {"cats": {"POSITIVE": -10}}),
-        (u"You are amazing", {"cats": {"POSITIVE": 0}}),
-        (u"I fucking love", {"cats": {"POSITIVE": 0}}),
-        (u"What an incredible", {"cats": {"POSITIVE": 0}}),
-        (u"congratulations", {"cats": {"POSITIVE": 0}}),
-        (u"That's incredible", {"cats": {"POSITIVE": 0}}),
-        (u"I'm sorry", {"cats": {"POSITIVE": 0}}),
-        (u"Great work", {"cats": {"POSITIVE": 0}}),
-        (u"I hate you", {"cats": {"POSITIVE": 1}}),
-        (u"You fucking moron", {"cats": {"POSITIVE": 10}}),
-        (u"morons", {"cats": {"POSITIVE": 1}}),
-        (u"Are you fucking stupid", {"cats": {"POSITIVE": 10}}),
-        (u"Everyone hates you", {"cats": {"POSITIVE": 1}}),
-        (u"That's the stupidest thing I've ever heard", {"cats": {"POSITIVE": 1}}),
-        (u"Lmao you're fucking deluded", {"cats": {"POSITIVE": 1}}),
-        (u"bitch", {"cats": {"POSITIVE": 1}}),
-        (u"so stupid", {"cats": {"POSITIVE": 1}}),
-        (u"You're so stupid", {"cats": {"POSITIVE": 1}}),
-        (u"You're a moron", {"cats": {"POSITIVE": 1}}),
-    ]    
+ 
     
     textcat = nlp.create_pipe('textcat')
     nlp.add_pipe(textcat, last=True)
     textcat.add_label('POSITIVE')
     optimizer = nlp.begin_training()
     
+    (train_texts, train_cats), (dev_texts, dev_cats) = load_data(train.train_data)
     
-    for itn in range(100):
+    print("Using {} examples ({} training, {} evaluation)"
+          .format(n_texts, len(train_texts), len(dev_texts)))
+    train_data = list(zip(train_texts,
+                          [{'cats': cats} for cats in train_cats]))
 
-        for doc, gold in train_data:
-            nlp.update([doc], [gold], sgd=optimizer)
-    
-    
-    #print(reddit.read_only)  # Output: True
+    # get names of other pipes to disable them during training
+    other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'textcat']
+    with nlp.disable_pipes(*other_pipes):  # only train textcat
+        optimizer = nlp.begin_training()
+        print("Training the model...")
+        print('{:^5}\t{:^5}\t{:^5}\t{:^5}'.format('LOSS', 'P', 'R', 'F'))
+        for i in range(n_iter):
+            losses = {}
+            # batch up the examples using spaCy's minibatch
+            batches = minibatch(train_data, size=compounding(4., 32., 1.001))
+            for batch in batches:
+                texts, annotations = zip(*batch)
+                
+                
+                
+                nlp.update(texts, annotations, sgd=optimizer, drop=0.2,
+                           losses=losses)
+            with textcat.model.use_params(optimizer.averages):
+                # evaluate on the dev data split off in load_data()
+                scores = evaluate(nlp.tokenizer, textcat, dev_texts, dev_cats)
+                
+            print('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
+                  .format(losses['textcat'], scores['textcat_p'],
+                          scores['textcat_r'], scores['textcat_f']))
     
     user = create_reddit_instance().redditor('imfatal')
     comments = []
@@ -90,11 +101,12 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
 
         doc = nlp('u' + comment)
         
-        if doc.cats['POSITIVE'] > 0.95:
+        if doc.cats['POSITIVE'] > 0.99:
             
             print ("-------------------------------------\n")
             print (comment)            
-            print(doc.cats)  
+            print(doc.cats)
+            
         else:
             continue
 
@@ -105,7 +117,7 @@ def create_reddit_instance():
     
     return praw.Reddit(client_id=id_string,
                          client_secret=secret_string,
-                         user_agent='Python Post SearchBot')    
+                         user_agent='Python Post SearchBot')
         
 def populateComments(comments, user):
 
