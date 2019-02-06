@@ -93,7 +93,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
                   .format(losses['textcat'], scores['textcat_p'],
                           scores['textcat_r'], scores['textcat_f']))
     
-    user = create_reddit_instance().redditor('imfatal')
+    user = create_reddit_instance().redditor('cherls')
     comments = []
     populateComments(comments, user)
     
