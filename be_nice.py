@@ -47,7 +47,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
         print("Created blank 'en' model")
 
     train_data = [
-        (u"I love you", {"cats": {"POSITIVE": 0}}),
+        (u"I love you", {"cats": {"POSITIVE": -10}}),
         (u"You are amazing", {"cats": {"POSITIVE": 0}}),
         (u"I fucking love", {"cats": {"POSITIVE": 0}}),
         (u"What an incredible", {"cats": {"POSITIVE": 0}}),
@@ -57,8 +57,8 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
         (u"Great work", {"cats": {"POSITIVE": 0}}),
         (u"I hate you", {"cats": {"POSITIVE": 1}}),
         (u"You fucking moron", {"cats": {"POSITIVE": 10}}),
-        (u"morons", {"cats": {"POSITIVE": 10}}),
-        (u"Are you fucking stupid", {"cats": {"POSITIVE": 1}}),
+        (u"morons", {"cats": {"POSITIVE": 1}}),
+        (u"Are you fucking stupid", {"cats": {"POSITIVE": 10}}),
         (u"Everyone hates you", {"cats": {"POSITIVE": 1}}),
         (u"That's the stupidest thing I've ever heard", {"cats": {"POSITIVE": 1}}),
         (u"Lmao you're fucking deluded", {"cats": {"POSITIVE": 1}}),
@@ -78,9 +78,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
 
         for doc, gold in train_data:
             nlp.update([doc], [gold], sgd=optimizer)
-        
-            
-
+    
     
     #print(reddit.read_only)  # Output: True
     
@@ -89,13 +87,16 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
     populateComments(comments, user)
     
     for comment in comments:
-        
-        print ("-------------------------------------\n")
-        print (comment)
+
         doc = nlp('u' + comment)
         
         if doc.cats['POSITIVE'] > 0.95:
-            print(doc.cats)    
+            
+            print ("-------------------------------------\n")
+            print (comment)            
+            print(doc.cats)  
+        else:
+            continue
 
 def create_reddit_instance():
     id_string = "WX4K8AbqnEaYzQ"
