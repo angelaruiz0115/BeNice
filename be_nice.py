@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # coding: utf8
-"""Train a convolutional neural network text classifier on the
-IMDB dataset, using the TextCategorizer component. The dataset will be loaded
-automatically via Thinc's built-in dataset loader. The model is added to
-spacy.pipeline, and predictions are available via `doc.cats`. For more details,
-see the documentation:
-* Training: https://spacy.io/usage/training
 
-Compatible with: spaCy v2.0.0+
-"""
 from __future__ import unicode_literals, print_function
 import plac
 import random
@@ -21,6 +13,7 @@ import string
 
 import praw
 import itertools
+import sys, getopt
 
 random.seed(123)
 
@@ -36,12 +29,14 @@ from train import train_data
 
 
 
-@plac.annotations(
-    model=("Model name. Defaults to blank 'en' model.", "option", "m", str),
-    output_dir=("Optional output directory", "option", "o", Path),
-    n_texts=("Number of texts to train from", "option", "t", int),
-    n_iter=("Number of training iterations", "option", "n", int))
-def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
+def main(username):
+    
+    model=None
+    output_dir=None
+    n_iter=20
+    n_texts=2000
+
+    
     if output_dir is not None:
         output_dir = Path(output_dir)
         if not output_dir.exists():
@@ -93,7 +88,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
                   .format(losses['textcat'], scores['textcat_p'],
                           scores['textcat_r'], scores['textcat_f']))
     
-    user = create_reddit_instance().redditor('cherls')
+    user = create_reddit_instance().redditor(username)
     comments = []
     populateComments(comments, user)
     
@@ -154,4 +149,34 @@ def populateComments(comments, user):
 
 
 if __name__ == '__main__':
-    plac.call(main)
+    
+    
+    argv = sys.argv[1:]
+    program_name = sys.argv[0]
+    
+    print ("Program: " + str(program_name))
+    print ("Argv: " + str(argv))
+    
+    username = ""
+    
+    if len(argv) != 2:
+        print ('usage: ' + program_name + ' -u <username>\n')
+        sys.exit(2)        
+
+    parse_directory = ''
+
+    try:
+        opts, args = getopt.getopt(argv,"hu:o:")
+    except getopt.GetoptError:
+        print ('usage: ' + program_name + ' -u <username>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print ('usage: ' + program_name + ' -u <username>')
+            sys.exit()
+        elif opt == "-u":
+            username = arg
+     
+
+    
+    main(username)
