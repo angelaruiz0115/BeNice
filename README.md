@@ -1,5 +1,8 @@
 # BeNice
-A Python NLU Program that detects when a Reddit user is being rude. 
+A Python program that detects when a Reddit user is being rude.
+
+Uses spacy NLU API to detect when someone is being rude. Outputs a list of comments that are deemed to be "rude."
+
 
 ## Usage
 ```
