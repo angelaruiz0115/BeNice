@@ -6,5 +6,5 @@ Uses spacy NLU API to detect when someone is being rude. Outputs a list of comme
 
 ## Usage
 ```
-python be_nice.py -u <reddit_username>
+python be_nice.py -u <reddit username> -n <number of comments to return>
 ```
