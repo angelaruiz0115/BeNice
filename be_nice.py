@@ -29,7 +29,7 @@ from train import train_data
 
 
 
-def main(username):
+def main(username, number_of_comments):
     
     model=None
     output_dir=None
@@ -63,12 +63,13 @@ def main(username):
     train_data = list(zip(train_texts,
                           [{'cats': cats} for cats in train_cats]))
 
+    #print (train_data)
     # get names of other pipes to disable them during training
     other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'textcat']
     with nlp.disable_pipes(*other_pipes):  # only train textcat
         optimizer = nlp.begin_training()
         print("Training the model...")
-        print('{:^5}\t{:^5}\t{:^5}\t{:^5}'.format('LOSS', 'P', 'R', 'F'))
+        #print('{:^5}\t{:^5}\t{:^5}\t{:^5}'.format('LOSS', 'P', 'R', 'F'))
         for i in range(n_iter):
             losses = {}
             # batch up the examples using spaCy's minibatch
@@ -84,13 +85,15 @@ def main(username):
                 # evaluate on the dev data split off in load_data()
                 scores = evaluate(nlp.tokenizer, textcat, dev_texts, dev_cats)
                 
-            print('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
-                  .format(losses['textcat'], scores['textcat_p'],
-                          scores['textcat_r'], scores['textcat_f']))
+            #print('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
+                  #.format(losses['textcat'], scores['textcat_p'],
+                          #scores['textcat_r'], scores['textcat_f']))
     
     user = create_reddit_instance().redditor(username)
     comments = []
     populateComments(comments, user)
+    
+    worst_comments = {}
     
     for comment in comments:
 
@@ -98,12 +101,21 @@ def main(username):
         
         if doc.cats['POSITIVE'] > 0.99:
             
-            print ("-------------------------------------\n")
-            print (comment)            
-            print(doc.cats)
+            #print ("-------------------------------------\n")
+            #print (comment)            
+            #print(doc.cats)
+            worst_comments[doc.cats['POSITIVE']] = comment
             
         else:
             continue
+        
+    for comment in sorted(worst_comments.keys())[-int(number_of_comments):]:
+        #print ("-------------------------------------\n")
+        #print ("%s: %s" % (comment, worst_comments[comment]))        
+        
+        
+        print (worst_comments[comment])
+        print ("-------------------------------------\n")
 
 def create_reddit_instance():
     id_string = "WX4K8AbqnEaYzQ"
@@ -150,7 +162,7 @@ def populateComments(comments, user):
 
 if __name__ == '__main__':
     
-    
+    """
     argv = sys.argv[1:]
     program_name = sys.argv[0]
     
@@ -159,24 +171,29 @@ if __name__ == '__main__':
     
     username = ""
     
-    if len(argv) != 2:
-        print ('usage: ' + program_name + ' -u <username>\n')
+    if len(argv) != 3:
+        print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
         sys.exit(2)        
 
     parse_directory = ''
 
     try:
-        opts, args = getopt.getopt(argv,"hu:o:")
+        opts, args = getopt.getopt(argv,"hun:o:")
     except getopt.GetoptError:
-        print ('usage: ' + program_name + ' -u <username>')
+        print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print ('usage: ' + program_name + ' -u <username>')
+            print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
             sys.exit()
         elif opt == "-u":
             username = arg
+        elif opt == "-n":
+            username = arg
      
-
+        """
     
-    main(username)
+    username = 'imfatal'
+    number_of_comments = 10
+    
+    main(username, number_of_comments)
