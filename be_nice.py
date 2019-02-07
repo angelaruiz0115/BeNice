@@ -162,38 +162,36 @@ def populateComments(comments, user):
 
 if __name__ == '__main__':
     
-    """
+    
     argv = sys.argv[1:]
     program_name = sys.argv[0]
     
-    print ("Program: " + str(program_name))
-    print ("Argv: " + str(argv))
     
-    username = ""
-    
-    if len(argv) != 3:
+    if len(argv) != 4:
         print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
         sys.exit(2)        
 
-    parse_directory = ''
 
     try:
-        opts, args = getopt.getopt(argv,"hun:o:")
+        opts, args = getopt.getopt(argv,"hu:n:")
+        
     except getopt.GetoptError:
         print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
         sys.exit(2)
+    
+    
+    username = ""
+    number_of_comments = 1
+    
     for opt, arg in opts:
+        
         if opt == '-h':
             print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
             sys.exit()
-        elif opt == "-u":
+        elif opt == '-u':
             username = arg
-        elif opt == "-n":
-            username = arg
-     
-        """
+        elif opt == '-n':
+            number_of_comments = arg
     
-    username = 'imfatal'
-    number_of_comments = 10
-    
+
     main(username, number_of_comments)
