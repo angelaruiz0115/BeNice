@@ -20,15 +20,10 @@ random.seed(123)
 import spacy
 from spacy.util import minibatch, compounding
 
-import nlu_functions
-from nlu_functions import load_data, evaluate
-
-import train
-from train import train_data
 
 
-def main():
-    test()
+def main(username):
+    test(username)
 
 def create_reddit_instance():
     id_string = "WX4K8AbqnEaYzQ"
@@ -39,7 +34,7 @@ def create_reddit_instance():
                          client_secret=secret_string,
                          user_agent='Python Post SearchBot')
 
-def test():
+def test(username):
     
     nlp = spacy.load('en_core_web_md')
     
@@ -48,17 +43,25 @@ def test():
     # A PRONOUN that comes before an ADJECTIVE (family of expletives) 
     #  that comes before a NOUN
     
-    user = create_reddit_instance().redditor('imfatal')
+    user = create_reddit_instance().redditor(username)
     comments = []
     populateComments(comments, user)
+    rude_posts = []
     
     
     for comment in comments:
         
+        
+        #Look for rude sentences
         for sentence in comment.split("."):
 
             sentence_doc = nlp('u' + sentence)
             
+            if isInsultSentence(nlp, sentence_doc):
+                rude_posts.append(comment);
+                break
+            
+            """
             pronoun_index = 0
             adj_index = 0
             noun_index = 0
@@ -76,24 +79,75 @@ def test():
                 if token.pos_ is "NOUN":
                     noun_index = i
                 
-                if pronoun_index < adj_index and adj_index < noun_index:
-                    print (comment)
-                    break
+            if pronoun_index < adj_index and adj_index < noun_index:
+                    
+                rude_posts.append(comment);
+            """
+            
+   
+    
+    for post in rude_posts:
+        
+        print ("    " + post)
+        print ("====================")
+        
+    print ("Number of rude posts: " + str(len(rude_posts)))
+            
 
+def isInsultSentence(nlp, doc):
+    
+    pronoun_index = 0
+    adj_index = 0
+    noun_index = 0
+    
+    for i in range(len(doc)):
+        
+        token = doc[i]
+        
+        if token.pos_ is "PRON":
+            pronoun_index = i
+            
+        if token.pos_ is "ADJ" and isInsult(nlp, token):
+            adj_index = i
+            
+        if token.pos_ is "NOUN":
+            noun_index = i 
+            
+    if pronoun_index < adj_index and adj_index < noun_index:
+        return True
+    else:
+        return False
+    
+       
                 
 def isInsult(nlp, input_token):
     #determines if the word belongs to a family of insults
     
-
+    """
+    swear_tokens = nlp(u'fucking loser retard')
+    total = 0
+    
+    for swear_token in swear_tokens:
+        
+        total += input_token.similarity(swear_token)
+        
+    #Find the average similarity score
+    average = total/len(swear_tokens)
+    
+    if average > 0.5:
+        return True
+    else:
+        return False
+    """
     swear_tokens = nlp(u'fucking')
     
     for swear_token in swear_tokens:
         
-        
-        if input_token.similarity(swear_token) > 0.5:
+        if input_token.similarity(swear_token) < 0.5:
             return True
         else:
-            return False 
+            return False
+    
         
         
 def populateComments(comments, user):
@@ -131,39 +185,34 @@ def populateComments(comments, user):
 
 
 if __name__ == '__main__':
-    main()
-    
-    """
+
     argv = sys.argv[1:]
     program_name = sys.argv[0]
     
     
-    if len(argv) != 4:
-        print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
+    if len(argv) != 2:
+        print ('usage: ' + program_name + ' -u <username>\n')
         sys.exit(2)        
 
 
     try:
-        opts, args = getopt.getopt(argv,"hu:n:")
+        opts, args = getopt.getopt(argv,"hu:")
         
     except getopt.GetoptError:
-        print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
+        
+        print ('usage: ' + program_name + ' -u <username>\n')
         sys.exit(2)
     
     
     username = ""
-    number_of_comments = 1
     
     for opt, arg in opts:
         
         if opt == '-h':
-            print ('usage: ' + program_name + ' -u <username> -n <number_of_comments>\n')
+            print ('usage: ' + program_name + ' -u <username>\n')
             sys.exit()
         elif opt == '-u':
             username = arg
-        elif opt == '-n':
-            number_of_comments = arg
     
-
-    main(username, number_of_comments)
-    """
+    print ("Searching posts for user /u/" + username + "...")
+    main(username)
