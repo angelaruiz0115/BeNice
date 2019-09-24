@@ -1,10 +1,10 @@
 # BeNice
 A Python program that detects when a Reddit user is being rude.
 
-Uses spacy NLU API to detect when someone is being rude. Outputs a list of comments that are deemed to be "rude."
+Uses spacy NLU API to detect when someone is being rude. Outputs a list of comments that are deemed to be "rude" along with number of rude comments.
 
 
 ## Usage
 ```
-python be_nice.py -u <reddit username> -n <number of comments to return>
+python be_nice.py -u <reddit username>
 ```
