@@ -41,7 +41,11 @@ from train import train_data
     output_dir=("Optional output directory", "option", "o", Path),
     n_texts=("Number of texts to train from", "option", "t", int),
     n_iter=("Number of training iterations", "option", "n", int))
+
 def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
+    test()
+
+def main2(model=None, output_dir=None, n_iter=20, n_texts=2000):
     if output_dir is not None:
         output_dir = Path(output_dir)
         if not output_dir.exists():
@@ -93,7 +97,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=2000):
                   .format(losses['textcat'], scores['textcat_p'],
                           scores['textcat_r'], scores['textcat_f']))
     
-    user = create_reddit_instance().redditor('cherls')
+    user = create_reddit_instance().redditor('imfatal')
     comments = []
     populateComments(comments, user)
     
@@ -118,6 +122,63 @@ def create_reddit_instance():
     return praw.Reddit(client_id=id_string,
                          client_secret=secret_string,
                          user_agent='Python Post SearchBot')
+
+def test():
+    
+    nlp = spacy.load('en_core_web_md')
+    
+    # We're looking for sentences like "You fucking loser"
+    # PRONOUN - ADJECTIVE - NOUN
+    # A PRONOUN that comes before an ADJECTIVE (family of expletives) 
+    #  that comes before a NOUN
+    
+    user = create_reddit_instance().redditor('imfatal')
+    comments = []
+    populateComments(comments, user)
+    
+    
+    for comment in comments:
+        
+        for sentence in comment.split("."):
+
+            sentence_doc = nlp('u' + sentence)
+            
+            pronoun_index = 0
+            adj_index = 0
+            noun_index = 0
+            
+            for i in range(len(sentence_doc)):
+                
+                token = sentence_doc[i]
+                
+                if token.pos_ is "PRON":
+                    pronoun_index = i
+                    
+                if token.pos_ is "ADJ" and isInsult(nlp, token):
+                    adj_index = i
+                    
+                if token.pos_ is "NOUN":
+                    noun_index = i
+                
+                if pronoun_index < adj_index and adj_index < noun_index:
+                    print (comment)
+                    break
+
+                
+def isInsult(nlp, input_token):
+    #determines if the word belongs to a family of insults
+    
+
+    swear_tokens = nlp(u'fucking')
+    
+    for swear_token in swear_tokens:
+        
+        
+        if input_token.similarity(swear_token) > 0.5:
+            return True
+        else:
+            return False 
+        
         
 def populateComments(comments, user):
 
