@@ -118,19 +118,6 @@ def isInsult(nlp, input_token):
     else:
         return False
     
-    
-    """
-    swear_tokens = nlp(u'fucking loser retard asshole')
-    
-    for swear_token in swear_tokens:
-        
-   
-        
-        if input_token.similarity(swear_token) < 0.5:
-            return True
-        else:
-            return False
-    """
         
         
 def populateComments(comments, user):
@@ -174,7 +161,7 @@ if __name__ == '__main__':
     
     
     if len(argv) != 2:
-        print ('usage: ' + program_name + ' -u <username>\n')
+        print ('\nusage: ' + program_name + ' -u <username>\n')
         sys.exit(2)        
 
 
@@ -183,7 +170,7 @@ if __name__ == '__main__':
         
     except getopt.GetoptError:
         
-        print ('usage: ' + program_name + ' -u <username>\n')
+        print ('\nusage: ' + program_name + ' -u <username>\n')
         sys.exit(2)
     
     
@@ -192,7 +179,7 @@ if __name__ == '__main__':
     for opt, arg in opts:
         
         if opt == '-h':
-            print ('usage: ' + program_name + ' -u <username>\n')
+            print ('\nusage: ' + program_name + ' -u <username>\n')
             sys.exit()
         elif opt == '-u':
             username = arg
