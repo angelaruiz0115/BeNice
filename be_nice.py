@@ -61,6 +61,29 @@ def test(username):
                 rude_posts.append(comment);
                 break
             
+            """
+            pronoun_index = 0
+            adj_index = 0
+            noun_index = 0
+            
+            for i in range(len(sentence_doc)):
+                
+                token = sentence_doc[i]
+                
+                if token.pos_ is "PRON":
+                    pronoun_index = i
+                    
+                if token.pos_ is "ADJ" and isInsult(nlp, token):
+                    adj_index = i
+                    
+                if token.pos_ is "NOUN":
+                    noun_index = i
+                
+            if pronoun_index < adj_index and adj_index < noun_index:
+                    
+                rude_posts.append(comment);
+            """
+            
    
     
     for post in rude_posts:
@@ -76,8 +99,6 @@ def isInsultSentence(nlp, doc):
     pronoun_index = 0
     adj_index = 0
     noun_index = 0
-    
-    
     
     for i in range(len(doc)):
         
