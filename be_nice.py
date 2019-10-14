@@ -61,29 +61,6 @@ def test(username):
                 rude_posts.append(comment);
                 break
             
-            """
-            pronoun_index = 0
-            adj_index = 0
-            noun_index = 0
-            
-            for i in range(len(sentence_doc)):
-                
-                token = sentence_doc[i]
-                
-                if token.pos_ is "PRON":
-                    pronoun_index = i
-                    
-                if token.pos_ is "ADJ" and isInsult(nlp, token):
-                    adj_index = i
-                    
-                if token.pos_ is "NOUN":
-                    noun_index = i
-                
-            if pronoun_index < adj_index and adj_index < noun_index:
-                    
-                rude_posts.append(comment);
-            """
-            
    
     
     for post in rude_posts:
@@ -99,6 +76,8 @@ def isInsultSentence(nlp, doc):
     pronoun_index = 0
     adj_index = 0
     noun_index = 0
+    
+    
     
     for i in range(len(doc)):
         
@@ -123,8 +102,8 @@ def isInsultSentence(nlp, doc):
 def isInsult(nlp, input_token):
     #determines if the word belongs to a family of insults
     
-    """
-    swear_tokens = nlp(u'fucking loser retard')
+    
+    swear_tokens = nlp(u'fucking loser retard moron')
     total = 0
     
     for swear_token in swear_tokens:
@@ -138,16 +117,20 @@ def isInsult(nlp, input_token):
         return True
     else:
         return False
+    
+    
     """
-    swear_tokens = nlp(u'fucking')
+    swear_tokens = nlp(u'fucking loser retard asshole')
     
     for swear_token in swear_tokens:
+        
+   
         
         if input_token.similarity(swear_token) < 0.5:
             return True
         else:
             return False
-    
+    """
         
         
 def populateComments(comments, user):
