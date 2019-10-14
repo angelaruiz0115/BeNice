@@ -48,6 +48,7 @@ def test(username):
     populateComments(comments, user)
     rude_posts = []
     
+    print ("Number of comments: " + str(len(comments)))
     
     for comment in comments:
         
