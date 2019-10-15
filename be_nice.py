@@ -22,9 +22,6 @@ from spacy.util import minibatch, compounding
 
 
 
-def main(username):
-    test(username)
-
 def create_reddit_instance():
     id_string = "WX4K8AbqnEaYzQ"
     secret_string = "h41anbk-QPHWJQ8EipU9JNlT83s"
@@ -34,7 +31,7 @@ def create_reddit_instance():
                          client_secret=secret_string,
                          user_agent='Python Post SearchBot')
 
-def test(username):
+def main(username):
     
     nlp = spacy.load('en_core_web_md')
     
