@@ -72,28 +72,39 @@ def test(username):
     print ("Number of comments: " + str(len(comments)))    
     print ("Number of rude posts: " + str(len(rude_posts)))
     print ("Rude percentage: " + str(len(rude_posts)/len(comments)*100) + "%")
+
+def isYou(nlp, input_token):
+    
+    
+    you_tokens = nlp(u'You')
+    total = 0
+    
+    for token in you_tokens:
+        
+        if input_token.similarity(token) > 0.5:
+            return True
+        else:
+            return False
+
             
 
 def isInsultSentence(nlp, doc):
     
     pronoun_index = 0
     adj_index = 0
-    noun_index = 0
     
     for i in range(len(doc)):
         
         token = doc[i]
         
-        if token.pos_ is "PRON":
+        if token.pos_ is "PRON" and isYou(nlp, token):
             pronoun_index = i
             
         if token.pos_ is "ADJ" and isInsult(nlp, token):
             adj_index = i
             
-        if token.pos_ is "NOUN":
-            noun_index = i 
             
-    if pronoun_index < adj_index and adj_index < noun_index:
+    if pronoun_index < adj_index:
         return True
     else:
         return False
@@ -104,7 +115,7 @@ def isInsult(nlp, input_token):
     #determines if the word belongs to a family of insults
     
     
-    swear_tokens = nlp(u'fucking loser retard moron')
+    swear_tokens = nlp(u'fucking loser retard retarded moron')
     total = 0
     
     for swear_token in swear_tokens:
