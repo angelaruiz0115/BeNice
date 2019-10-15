@@ -48,7 +48,6 @@ def test(username):
     populateComments(comments, user)
     rude_posts = []
     
-    print ("Number of comments: " + str(len(comments)))
     
     for comment in comments:
         
@@ -62,37 +61,17 @@ def test(username):
                 rude_posts.append(comment);
                 break
             
-            """
-            pronoun_index = 0
-            adj_index = 0
-            noun_index = 0
-            
-            for i in range(len(sentence_doc)):
-                
-                token = sentence_doc[i]
-                
-                if token.pos_ is "PRON":
-                    pronoun_index = i
-                    
-                if token.pos_ is "ADJ" and isInsult(nlp, token):
-                    adj_index = i
-                    
-                if token.pos_ is "NOUN":
-                    noun_index = i
-                
-            if pronoun_index < adj_index and adj_index < noun_index:
-                    
-                rude_posts.append(comment);
-            """
-            
-   
-    
+    print ("========================================")
+
     for post in rude_posts:
         
         print ("    " + post)
-        print ("====================")
-        
+        print ("========================================")
+
+
+    print ("Number of comments: " + str(len(comments)))    
     print ("Number of rude posts: " + str(len(rude_posts)))
+    print ("Rude percentage: " + str(len(rude_posts)/len(comments)*100) + "%")
             
 
 def isInsultSentence(nlp, doc):
