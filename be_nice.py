@@ -26,13 +26,6 @@ from praw.models import MoreComments
 
 def create_reddit_instance(id_string, secret_string, username_string, password_string):
 
-    """
-    
-    return praw.Reddit(client_id=id_string,
-                         client_secret=secret_string,
-                         user_agent='Python Post SearchBot')
-
-    """
     reddit = praw.Reddit(user_agent="Comment Extraction",
                      client_id=id_string, client_secret=secret_string,
                      username=username_string, password=password_string)
@@ -49,11 +42,10 @@ def main(username, id_string, secret_string, username_string, password_string):
     #  that comes before a NOUN
     
     reddit = create_reddit_instance(id_string, secret_string, username_string, password_string)
-    user = "imfatal"
 
 
     comments = []
-    populateComments(comments, user, reddit)
+    populateComments(comments, username, reddit)
 
     rude_posts = []
     
@@ -77,10 +69,15 @@ def main(username, id_string, secret_string, username_string, password_string):
         print ("    " + post)
         print ("========================================")
 
+    total_comments = len(comments)
 
-    print ("Number of comments: " + str(len(comments)))    
+    print ("Number of comments: " + str(total_comments))   
     print ("Number of rude posts: " + str(len(rude_posts)))
-    print ("Rude percentage: " + str(len(rude_posts)/len(comments)*100) + "%")
+
+    
+
+    if total_comments > 0:
+        print ("Rude percentage: " + str(len(rude_posts)/total_comments*100) + "%")
 
 def isYou(nlp, input_token):
     
@@ -143,24 +140,26 @@ def isInsult(nlp, input_token):
         
 def populateComments(comments, user, reddit):
 
-    #comments is an empty list
+    user_object = reddit.redditor(user)
 
-    submission = reddit.submission(id="iv240z")
+    print("\nThis may take a while...")
 
-    for top_level_comment in submission.comments:
-        if isinstance(top_level_comment, MoreComments):
-            continue
-        print(top_level_comment.body) 
+    for comment in user_object.comments.controversial(limit=None):
+
+        if comment.body not in comments:
+            comments.append(comment.body)
+        else:
+            continue 
 
     """
-    for comment in user.comments.new():
+    for comment in user_object.comments.new(limit=None):
 
         if comment.body not in comments:
             comments.append(comment.body)
         else:
             continue
 
-    for comment in user.comments.hot():
+    for comment in user_object.comments.hot(limit=None):
 
         if comment.body not in comments:
             comments.append(comment.body)
@@ -168,20 +167,21 @@ def populateComments(comments, user, reddit):
             continue
 
 
-    for comment in user.comments.top():
+    for comment in user_object.comments.top(limit=None):
 
         if comment.body not in comments:
             comments.append(comment.body)
         else:
             continue      
 
-    for comment in user.comments.controversial():
+    for comment in user_object.comments.controversial(limit=None):
 
         if comment.body not in comments:
             comments.append(comment.body)
         else:
             continue  
-    """              
+"""
+              
 
 
 if __name__ == '__main__':
@@ -241,6 +241,6 @@ if __name__ == '__main__':
         elif opt == '-u':
             username = arg
     
-    print ("Searching posts for user /u/" + username + "...")
+    print ("\nSearching posts for user /u/" + username + "...")
 
     main(username, id_string, secret_string, username_string, password_string)
