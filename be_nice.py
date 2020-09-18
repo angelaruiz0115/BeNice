@@ -44,40 +44,38 @@ def main(username, id_string, secret_string, username_string, password_string):
     reddit = create_reddit_instance(id_string, secret_string, username_string, password_string)
 
 
-    comments = []
-    populateComments(comments, username, reddit)
-
     rude_posts = []
-    
-    
-    for comment in comments:
-        
-        
-        #Look for rude sentences
-        for sentence in comment.split("."):
 
-            sentence_doc = nlp('u' + sentence)
+    post_count = populateComments(rude_posts, username, reddit, nlp)
+    rude_post_count = len(rude_posts)
+    rude_percent = truncate(rude_post_count/post_count * 100, 3)
             
-            if isInsultSentence(nlp, sentence_doc):
-                rude_posts.append(comment);
-                break
-            
-    print ("========================================")
+    print ("Number of rude posts: " + str(rude_post_count))
+    print ("Total number of posts: " + str(post_count))
+    print("\nRude percentage: " + str(rude_percent))
 
-    for post in rude_posts:
+    if rude_percent < 50:
+        print("\nCongrats! This user is not that rude.")
+    else:
+        print("\nThis user is pretty rude!")
+
+    print ("\n\nExiting.")
+
+
+def isRudeComment(comment, nlp):
+
+    #The key is here is to look for insulting sentences
+    # if one is found, return true.
+
+    for sentence in comment.split("."):
+
+        sentence_doc = nlp('u' + sentence)
         
-        print ("    " + post)
-        print ("========================================")
+        return isInsultSentence(nlp, sentence_doc)
 
-    total_comments = len(comments)
 
-    print ("Number of comments: " + str(total_comments))   
-    print ("Number of rude posts: " + str(len(rude_posts)))
 
-    
 
-    if total_comments > 0:
-        print ("Rude percentage: " + str(len(rude_posts)/total_comments*100) + "%")
 
 def isYou(nlp, input_token):
     
@@ -138,18 +136,35 @@ def isInsult(nlp, input_token):
     
         
         
-def populateComments(comments, user, reddit):
+def populateComments(rude_comments, user, reddit, nlp):
 
     user_object = reddit.redditor(user)
 
-    print("\nThis may take a while...")
+
+    f = open("rude_ouput.txt", "w")
+
+    print("\nWriting to output file...")
+
+    i = 0 
 
     for comment in user_object.comments.controversial(limit=None):
+        i+=1
 
-        if comment.body not in comments:
-            comments.append(comment.body)
-        else:
-            continue 
+        if isRudeComment(comment.body, nlp):
+
+            rude_comments.append(comment.body)
+
+
+
+            f.write("========================================")
+            f.write("    " + comment.body)
+            f.write("========================================")
+
+    f.close()
+
+    return i
+
+            
 
     """
     for comment in user_object.comments.new(limit=None):
@@ -181,6 +196,10 @@ def populateComments(comments, user, reddit):
         else:
             continue  
 """
+
+def truncate(n, decimals=0):
+    multiplier = 10 ** decimals
+    return int(n * multiplier) / multiplier
               
 
 
@@ -208,7 +227,7 @@ if __name__ == '__main__':
         else:
             password_string = parts[1].strip()
 
-    print("\n=== Welcome to BeNice! ===\n")
+    print("\n=== Please BeNice! ===\n")
 
     print("id_string is: " + id_string)
     print ("secret_string is: " + secret_string)
@@ -242,5 +261,6 @@ if __name__ == '__main__':
             username = arg
     
     print ("\nSearching posts for user /u/" + username + "...")
+    print("\nThis may take a while...")
 
     main(username, id_string, secret_string, username_string, password_string)
