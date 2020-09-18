@@ -23,8 +23,8 @@ python be_nice.py -u <reddit username>
 ```
 === Please BeNice! ===
 
-id_string is: uZtwCFoCbBOzWQ
-secret_string is: ZPLQmG1LwoGRns6MwegKcl4Fd3Y
+id_string is: [redacted]
+secret_string is: [redacted]
 
 Searching posts for user /u/[reddit_username]...
 
