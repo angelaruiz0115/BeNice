@@ -3,7 +3,7 @@ A Python program that detects when a Reddit user is being rude.
 
 Uses spacy NLU API to detect when someone is being rude. Outputs a list of comments that are deemed to be "rude" along with number of rude comments.
 
-To Use:
+## Setup Instructions
 
 You need to create an account on Reddit and create a script application here https://www.reddit.com/prefs/apps/
 
