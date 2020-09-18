@@ -1,0 +1,4 @@
+id_string: <put id string here>
+secret_string: <put secret string here>
+username: <put username here>
+password: <put password here>
