@@ -20,18 +20,26 @@ random.seed(123)
 import spacy
 from spacy.util import minibatch, compounding
 
+from praw.models import MoreComments
 
 
-def create_reddit_instance():
-    id_string = "WX4K8AbqnEaYzQ"
-    secret_string = "h41anbk-QPHWJQ8EipU9JNlT83s"
-    
+
+def create_reddit_instance(id_string, secret_string, username_string, password_string):
+
+    """
     
     return praw.Reddit(client_id=id_string,
                          client_secret=secret_string,
                          user_agent='Python Post SearchBot')
 
-def main(username):
+    """
+    reddit = praw.Reddit(user_agent="Comment Extraction",
+                     client_id=id_string, client_secret=secret_string,
+                     username=username_string, password=password_string)
+
+    return reddit
+
+def main(username, id_string, secret_string, username_string, password_string):
     
     nlp = spacy.load('en_core_web_md')
     
@@ -40,9 +48,13 @@ def main(username):
     # A PRONOUN that comes before an ADJECTIVE (family of expletives) 
     #  that comes before a NOUN
     
-    user = create_reddit_instance().redditor(username)
+    reddit = create_reddit_instance(id_string, secret_string, username_string, password_string)
+    user = "imfatal"
+
+
     comments = []
-    populateComments(comments, user)
+    populateComments(comments, user, reddit)
+
     rude_posts = []
     
     
@@ -122,17 +134,25 @@ def isInsult(nlp, input_token):
     #Find the average similarity score
     average = total/len(swear_tokens)
     
-    if average > 0.5:
+    if average > 0.6:
         return True
     else:
         return False
     
         
         
-def populateComments(comments, user):
+def populateComments(comments, user, reddit):
 
     #comments is an empty list
 
+    submission = reddit.submission(id="iv240z")
+
+    for top_level_comment in submission.comments:
+        if isinstance(top_level_comment, MoreComments):
+            continue
+        print(top_level_comment.body) 
+
+    """
     for comment in user.comments.new():
 
         if comment.body not in comments:
@@ -160,10 +180,38 @@ def populateComments(comments, user):
         if comment.body not in comments:
             comments.append(comment.body)
         else:
-            continue                
+            continue  
+    """              
 
 
 if __name__ == '__main__':
+
+    # Read id and secret from CONFIG.txt
+    config_file = open('CONFIG.txt', 'r')
+
+    lines = config_file.readlines()
+    id_string = "" 
+    secret_string = ""
+    username_string = ""
+    password_string = ""
+
+    for line in lines:
+
+        parts = line.split(":")
+
+        if parts[0] == "id_string":
+            id_string = parts[1].strip()
+        elif parts[0] == "secret_string":
+            secret_string = parts[1].strip()
+        elif parts[0] == "username":
+            username_string = parts[1].strip()
+        else:
+            password_string = parts[1].strip()
+
+    print("\n=== Welcome to BeNice! ===\n")
+
+    print("id_string is: " + id_string)
+    print ("secret_string is: " + secret_string)
 
     argv = sys.argv[1:]
     program_name = sys.argv[0]
@@ -194,4 +242,5 @@ if __name__ == '__main__':
             username = arg
     
     print ("Searching posts for user /u/" + username + "...")
-    main(username)
+
+    main(username, id_string, secret_string, username_string, password_string)
